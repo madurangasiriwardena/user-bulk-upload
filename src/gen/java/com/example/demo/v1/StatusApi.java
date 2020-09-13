@@ -24,25 +24,26 @@ import java.util.List;
 import java.util.Map;
 
 @Validated
-@Api(value = "status{id}", description = "the status{id} API")
-public interface StatusidApi {
+@Api(value = "status", description = "the status API")
+public interface StatusApi {
 
-    default StatusidApiDelegate getDelegate() {
-        return new StatusidApiDelegate() {};
+    default StatusApiDelegate getDelegate() {
+        return new StatusApiDelegate() {};
     }
 
     /**
-     * GET /status{id} : Get operation status
+     * GET /status/{id} : Get operation status
      *
      * @param id  (required)
      * @return Successful operation (status code 200)
      */
-    @ApiOperation(value = "Get operation status", nickname = "getStatus", notes = "", tags={  })
+    @ApiOperation(value = "Get operation status", nickname = "getStatus", notes = "", response = String.class, tags={  })
     @ApiResponses(value = { 
-        @ApiResponse(code = 200, message = "Successful operation") })
-    @RequestMapping(value = "/status{id}",
+        @ApiResponse(code = 200, message = "Successful operation", response = String.class) })
+    @RequestMapping(value = "/status/{id}",
+        produces = { "application/json" }, 
         method = RequestMethod.GET)
-    default ResponseEntity<Void> getStatus(@ApiParam(value = "",required=true) @PathVariable("id") String id) {
+    default ResponseEntity<String> getStatus(@ApiParam(value = "",required=true) @PathVariable("id") String id) {
         return getDelegate().getStatus(id);
     }
 

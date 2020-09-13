@@ -27,10 +27,19 @@ public interface UsersApiDelegate {
      * POST /users : Upload users via CSV file
      *
      * @param file  (optional)
-     * @return Successful operation (status code 200)
+     * @return Task accepted (status code 202)
      * @see UsersApi#uploadUsers
      */
-    default ResponseEntity<Void> uploadUsers(MultipartFile file) {
+    default ResponseEntity<String> uploadUsers(MultipartFile file) {
+        getRequest().ifPresent(request -> {
+            for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
+                if (mediaType.isCompatibleWith(MediaType.valueOf(""))) {
+                    String exampleString = "";
+                    ApiUtil.setExampleResponse(request, "", exampleString);
+                    break;
+                }
+            }
+        });
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
 
     }

@@ -36,15 +36,16 @@ public interface UsersApi {
      * POST /users : Upload users via CSV file
      *
      * @param file  (optional)
-     * @return Successful operation (status code 200)
+     * @return Task accepted (status code 202)
      */
-    @ApiOperation(value = "Upload users via CSV file", nickname = "uploadUsers", notes = "", tags={  })
+    @ApiOperation(value = "Upload users via CSV file", nickname = "uploadUsers", notes = "", response = String.class, tags={  })
     @ApiResponses(value = { 
-        @ApiResponse(code = 200, message = "Successful operation") })
+        @ApiResponse(code = 202, message = "Task accepted", response = String.class) })
     @RequestMapping(value = "/users",
+        produces = { "text/plain" }, 
         consumes = { "multipart/form-data" },
         method = RequestMethod.POST)
-    default ResponseEntity<Void> uploadUsers(@ApiParam(value = "") @Valid @RequestPart(value = "file") MultipartFile file) {
+    default ResponseEntity<String> uploadUsers(@ApiParam(value = "") @Valid @RequestPart(value = "file") MultipartFile file) {
         return getDelegate().uploadUsers(file);
     }
 

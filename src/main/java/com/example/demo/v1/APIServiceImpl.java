@@ -1,33 +1,35 @@
 package com.example.demo.v1;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 @Component()
-public class APIServiceImpl implements UsersApiDelegate, StatusidApiDelegate {
+public class APIServiceImpl implements UsersApiDelegate, StatusApiDelegate {
 
     @Override
-    public ResponseEntity<Void> getStatus(String id) {
+    public ResponseEntity<String> getStatus(String id) {
 
-        return ResponseEntity.status(200).build();
+        try {
+            return new ResponseEntity<>(
+                    convertMapToJson(StatusHolder.getStatus(id)),
+                    HttpStatus.ACCEPTED);
+        } catch (JsonProcessingException e) {
+            return ResponseEntity.status(500).build();
+        }
     }
 
     @Override
@@ -37,7 +39,7 @@ public class APIServiceImpl implements UsersApiDelegate, StatusidApiDelegate {
     }
 
     @Override
-    public ResponseEntity<Void> uploadUsers(MultipartFile file) {
+    public ResponseEntity<String> uploadUsers(MultipartFile file) {
 
         UUID correlationId = UUID.randomUUID();
 
@@ -46,7 +48,7 @@ public class APIServiceImpl implements UsersApiDelegate, StatusidApiDelegate {
             file.transferTo(tempFile.toFile());
 
             Executor executor = Executors.newSingleThreadExecutor();
-            UserService task = new UserService(tempFile.toFile().getPath());
+            UserService task = new UserService(tempFile.toFile().getPath(), correlationId.toString());
             executor.execute(task);
 
         } catch (IOException e) {
@@ -54,6 +56,12 @@ public class APIServiceImpl implements UsersApiDelegate, StatusidApiDelegate {
         }
         return new ResponseEntity<>(
                 correlationId.toString(),
-                HttpStatus.OK);
+                HttpStatus.ACCEPTED);
+    }
+
+    private String convertMapToJson(Map<String, Integer> elements) throws JsonProcessingException {
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.writeValueAsString(elements);
     }
 }

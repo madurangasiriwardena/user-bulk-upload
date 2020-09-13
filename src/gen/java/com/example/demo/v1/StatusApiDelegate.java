@@ -12,24 +12,33 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * A delegate to be called by the {@link StatusidApiController}}.
+ * A delegate to be called by the {@link StatusApiController}}.
  * Implement this interface with a {@link org.springframework.stereotype.Service} annotated class.
  */
 
-public interface StatusidApiDelegate {
+public interface StatusApiDelegate {
 
     default Optional<NativeWebRequest> getRequest() {
         return Optional.empty();
     }
 
     /**
-     * GET /status{id} : Get operation status
+     * GET /status/{id} : Get operation status
      *
      * @param id  (required)
      * @return Successful operation (status code 200)
-     * @see StatusidApi#getStatus
+     * @see StatusApi#getStatus
      */
-    default ResponseEntity<Void> getStatus(String id) {
+    default ResponseEntity<String> getStatus(String id) {
+        getRequest().ifPresent(request -> {
+            for (MediaType mediaType: MediaType.parseMediaTypes(request.getHeader("Accept"))) {
+                if (mediaType.isCompatibleWith(MediaType.valueOf("application/json"))) {
+                    String exampleString = "\"af2607ff-3971-47a0-81d4-cb5be1d2e60d\"";
+                    ApiUtil.setExampleResponse(request, "application/json", exampleString);
+                    break;
+                }
+            }
+        });
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
 
     }

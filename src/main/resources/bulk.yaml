@@ -1,22 +1,16 @@
 openapi: 3.0.0
 # Added by API Auto Mocking Plugin
 servers:
-  - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/Maduranga/BulkUpload/1.0.0
+  - url: https://api.example.com/BulkUpload/v1
 info:
   description: This is a simple API
   version: "1.0.0"
-  title: Simple Inventory API
+  title: User Bulk Upload API
   contact:
     email: you@your-company.com
   license:
     name: Apache 2.0
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
-tags:
-  - name: admins
-    description: Secured Admin-only calls
-  - name: developers
-    description: Operations available to regular developers
 paths:
   /users:
     post:
@@ -32,9 +26,14 @@ paths:
                   type: string
                   format: binary
       responses:
-        '200':
-          description: Successful operation
-  /status{id}:
+        '202':
+          description: Task accepted
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: af2607ff-3971-47a0-81d4-cb5be1d2e60d
+  /status/{id}:
     get:
       summary: Get operation status
       operationId: getStatus
@@ -48,7 +47,7 @@ paths:
         '200':
           description: Successful operation
           content:
-            text/plain:
+            application/json:
               schema:
                 type: string
                 example: af2607ff-3971-47a0-81d4-cb5be1d2e60d

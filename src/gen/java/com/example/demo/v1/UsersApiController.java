@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import java.util.Optional;
 
 @Controller
-@RequestMapping("${openapi.simpleInventory.base-path:/BulkUpload/1.0.0}")
+@RequestMapping("${openapi.userBulkUpload.base-path:/BulkUpload/v1}")
 public class UsersApiController implements UsersApi {
 
     private final UsersApiDelegate delegate;
