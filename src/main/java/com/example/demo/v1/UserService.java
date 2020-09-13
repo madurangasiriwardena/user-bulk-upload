@@ -4,6 +4,7 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -24,15 +25,17 @@ public class UserService implements Runnable {
     @Override
     public void run() {
 
-        Path path = Paths.get(filePath);
+        Path csvFilePath = Paths.get(filePath);
 
-        try (Reader reader = new FileReader(path.toFile());
+        File csvFile = csvFilePath.toFile();
+        try (Reader reader = new FileReader(csvFile);
              CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader())) {
             for (CSVRecord csvRecord : csvParser) {
-                int status = new UserManager().createUser(csvRecord);
-                String username = csvRecord.get("USR_LOGIN");
-                StatusHolder.addStatus(correlationId, username, status);
+                BulkResponse status = new UserManager().createUser(csvRecord);
+                StatusHolder.addStatus(correlationId, status);
             }
+
+            csvFile.delete();
         } catch (IOException e) {
             e.printStackTrace();
         }

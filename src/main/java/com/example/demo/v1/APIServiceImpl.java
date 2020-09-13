@@ -11,7 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Executor;
@@ -25,10 +25,10 @@ public class APIServiceImpl implements UsersApiDelegate, StatusApiDelegate {
 
         try {
             return new ResponseEntity<>(
-                    convertMapToJson(StatusHolder.getStatus(id)),
-                    HttpStatus.ACCEPTED);
+                    convertListToJson(StatusHolder.getStatus(id)),
+                    HttpStatus.OK);
         } catch (JsonProcessingException e) {
-            return ResponseEntity.status(500).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -59,7 +59,7 @@ public class APIServiceImpl implements UsersApiDelegate, StatusApiDelegate {
                 HttpStatus.ACCEPTED);
     }
 
-    private String convertMapToJson(Map<String, Integer> elements) throws JsonProcessingException {
+    private String convertListToJson(List<BulkResponse> elements) throws JsonProcessingException {
 
         ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.writeValueAsString(elements);

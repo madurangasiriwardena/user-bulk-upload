@@ -12,6 +12,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.springframework.http.HttpStatus;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -36,7 +37,7 @@ public class UserManager {
         client = HttpClients.createDefault();
     }
 
-    public int createUser(CSVRecord csvRecord) {
+    public BulkResponse createUser(CSVRecord csvRecord) {
 
         try {
             JSONObject scimUser = buildSCIMUser(csvRecord);
@@ -44,7 +45,7 @@ public class UserManager {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return 500;
+        return null;
     }
 
     public JSONObject buildSCIMUser(CSVRecord csvRecord) throws IOException {
@@ -82,7 +83,7 @@ public class UserManager {
         return rootObject;
     }
 
-    public int sendRequest(JSONObject rootObject) throws IOException {
+    public BulkResponse sendRequest(JSONObject rootObject) throws IOException {
         //TODO add config for the URL and authorization header
         HttpPost request = new HttpPost("https://localhost:9443/scim2/Users");
         request.addHeader(HttpHeaders.AUTHORIZATION, getAuthzHeader());
@@ -92,8 +93,19 @@ public class UserManager {
         request.setEntity(entity);
 
         HttpResponse response = client.execute(request);
-        System.out.println(EntityUtils.toString(response.getEntity()));
-        return response.getStatusLine().getStatusCode();
+        BulkResponse scimResponse = new BulkResponse();
+
+        if (!HttpStatus.valueOf(response.getStatusLine().getStatusCode()).is2xxSuccessful()) {
+            scimResponse.setResponse(EntityUtils.toString(response.getEntity()));
+        }
+        EntityUtils.consumeQuietly(response.getEntity());
+
+        scimResponse.setStatus(response.getStatusLine().getStatusCode());
+        scimResponse.setMethod("POST");
+        if (response.getStatusLine().getStatusCode() == 201) {
+            scimResponse.setLocation(response.getHeaders("Location")[0].getValue());
+        }
+        return scimResponse;
     }
 
     private String getAuthzHeader() {
