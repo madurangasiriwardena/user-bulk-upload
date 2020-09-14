@@ -1,5 +1,6 @@
 package com.example.demo.v1;
 
+import com.example.demo.v1.bean.BulkResponse;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
@@ -12,10 +13,12 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 
 import static com.example.demo.v1.Constants.EMAILS_ATTRIBUTE;
 import static com.example.demo.v1.Constants.EMAIL_TYPE_WORK_ATTRIBUTE;
@@ -28,9 +31,20 @@ import static com.example.demo.v1.Constants.TYPE_PARAM;
 import static com.example.demo.v1.Constants.USER_NAME_ATTRIBUTE;
 import static com.example.demo.v1.Constants.VALUE_PARAM;
 
+@Service
+@Scope("prototype")
 public class UserManager {
 
     private CloseableHttpClient client;
+
+    @Value("${scim.endpoint}")
+    private String endpoint;
+
+    @Value("${scim.username}")
+    private String adminUsername;
+
+    @Value("${scim.password}")
+    private String adminPassword;
 
     public UserManager() {
 
@@ -48,12 +62,12 @@ public class UserManager {
         return null;
     }
 
-    public JSONObject buildSCIMUser(CSVRecord csvRecord) throws IOException {
+    public JSONObject buildSCIMUser(CSVRecord csvRecord) {
+
         String lastName = csvRecord.get("USR_LAST_NAME");
         String firstName = csvRecord.get("USR_FIRST_NAME");
         String email = csvRecord.get("USR_EMAIL");
         String username = csvRecord.get("USR_LOGIN");
-        System.out.println(username);
 
         JSONObject rootObject = new JSONObject();
 
@@ -84,8 +98,8 @@ public class UserManager {
     }
 
     public BulkResponse sendRequest(JSONObject rootObject) throws IOException {
-        //TODO add config for the URL and authorization header
-        HttpPost request = new HttpPost("https://localhost:9443/scim2/Users");
+
+        HttpPost request = new HttpPost(endpoint);
         request.addHeader(HttpHeaders.AUTHORIZATION, getAuthzHeader());
         request.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
 
@@ -109,6 +123,7 @@ public class UserManager {
     }
 
     private String getAuthzHeader() {
-        return "Basic " + Base64.encodeBase64String(("admin" + ":" + "admin").getBytes()).trim();
+
+        return "Basic " + Base64.encodeBase64String((adminUsername + ":" + adminPassword).getBytes()).trim();
     }
 }

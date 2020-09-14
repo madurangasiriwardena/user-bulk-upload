@@ -1,4 +1,4 @@
-package com.example.demo.v1;
+package com.example.demo.v1.bean;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonRawValue;

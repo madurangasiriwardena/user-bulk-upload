@@ -1,11 +1,13 @@
-package com.example.demo.v1;
+package com.example.demo.v1.dao;
+
+import com.example.demo.v1.bean.BulkResponse;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class StatusHolder {
+public class StatusDao {
 
     private static final Map<String, List<BulkResponse>> statusMap = new HashMap<>();
 

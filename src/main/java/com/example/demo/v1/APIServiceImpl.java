@@ -1,7 +1,13 @@
 package com.example.demo.v1;
 
+import com.example.demo.v1.bean.BulkResponse;
+import com.example.demo.v1.dao.StatusDao;
+import com.example.demo.v1.task.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -14,18 +20,22 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 @Component()
 public class APIServiceImpl implements UsersApiDelegate, StatusApiDelegate {
+
+    @Autowired
+    private ApplicationContext ctx;
+
+    @Autowired
+    private TaskExecutor taskExecutor;
 
     @Override
     public ResponseEntity<String> getStatus(String id) {
 
         try {
             return new ResponseEntity<>(
-                    convertListToJson(StatusHolder.getStatus(id)),
+                    convertListToJson(StatusDao.getStatus(id)),
                     HttpStatus.OK);
         } catch (JsonProcessingException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -47,9 +57,8 @@ public class APIServiceImpl implements UsersApiDelegate, StatusApiDelegate {
             Path tempFile = Files.createTempFile("", correlationId.toString());
             file.transferTo(tempFile.toFile());
 
-            Executor executor = Executors.newSingleThreadExecutor();
-            UserService task = new UserService(tempFile.toFile().getPath(), correlationId.toString());
-            executor.execute(task);
+            UserService user = ctx.getBean(UserService.class, tempFile.toFile().getPath(), correlationId.toString());
+            taskExecutor.execute(user);
 
         } catch (IOException e) {
             e.printStackTrace();
